@@ -2,8 +2,10 @@
 package calculadora;
 
 /**
- *
- * @author hugot
+Nombre completo: Hugo Ivan Marin Galicia
+Fecha de elaboración: 12 de Marzo de 2023
+Nombre del Módulo: Topicos Avanzados de Programación
+Nombre del Asesor: Margarita Márquez Tirso
  */
 
 
@@ -13,100 +15,154 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class Calculadora extends JFrame implements ActionListener {
-    
     private JTextField textField;
     private JButton[] numberButtons;
     private JButton[] operationButtons;
     private JButton equalsButton, clearButton;
-
     private double num1, num2, result;
     private char operator;
 
     public Calculadora() {
         setTitle("Calculadora");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(400, 500);
-        setLayout(new GridLayout(6, 4));
+        setSize(400, 600);
 
+        // Inicialización de componentes
         textField = new JTextField();
-        numberButtons = new JButton[10];
-        operationButtons = new JButton[4];
-        equalsButton = new JButton("=");
-        clearButton = new JButton("C");
+        initializeTextField();
 
-        for (int i = 0; i < 10; i++) {
-            numberButtons[i] = new JButton(String.valueOf(i));
-            numberButtons[i].setFont(new Font("Arial", Font.PLAIN, 18));
-            numberButtons[i].addActionListener(this);
-        }
+        JPanel buttonPanel = createButtonPanel();
 
-        String[] operations = {"+", "-", "*", "/"};
-        for (int i = 0; i < 4; i++) {
-            operationButtons[i] = new JButton(operations[i]);
-            operationButtons[i].setFont(new Font("Arial", Font.PLAIN, 18));
-            operationButtons[i].addActionListener(this);
-        }
+        // Diseño del panel principal con BorderLayout
+        JPanel panelPrincipal = new JPanel();
+        panelPrincipal.setLayout(new BorderLayout());
+        panelPrincipal.add(textField, BorderLayout.NORTH);
+        panelPrincipal.add(buttonPanel, BorderLayout.CENTER);
 
-        equalsButton.setFont(new Font("Arial", Font.PLAIN, 18));
-        equalsButton.addActionListener(this);
-
-        clearButton.setFont(new Font("Arial", Font.PLAIN, 18));
-        clearButton.addActionListener(this);
-
-        textField.setFont(new Font("Arial", Font.PLAIN, 24));
-        textField.setHorizontalAlignment(JTextField.RIGHT);
-
-        add(textField);
-        for (int i = 1; i < 10; i++) {
-            add(numberButtons[i]);
-        }
-        add(numberButtons[0]);
-        add(clearButton);
-        add(operationButtons[0]);
-        add(operationButtons[1]);
-        add(operationButtons[2]);
-        add(operationButtons[3]);
-        add(equalsButton);
-
+        // Añadir el panel principal a la ventana
+        add(panelPrincipal);
         setVisible(true);
     }
 
+    private void initializeTextField() {
+        textField.setFont(new Font("Arial", Font.PLAIN, 24));
+        textField.setEditable(false);
+        textField.setHorizontalAlignment(JTextField.RIGHT);
+        textField.setPreferredSize(new Dimension(400, 50));
+    }
+
+    private JPanel createButtonPanel() {
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setLayout(new GridLayout(4, 4, 4, 4));
+
+        numberButtons = createNumberButtons();
+        operationButtons = createOperationButtons();
+        equalsButton = createButton("=", 80, 80);
+        clearButton = createButton("C", 80, 80);
+
+        addButtonsToPanel(buttonPanel);
+
+        return buttonPanel;
+    }
+
+    private JButton[] createNumberButtons() {
+        JButton[] buttons = new JButton[10];
+        for (int i = 0; i < 10; i++) {
+            buttons[i] = createButton(String.valueOf(i), 80, 80);
+            buttons[i].addActionListener(this);
+        }
+        return buttons;
+    }
+
+    private JButton[] createOperationButtons() {
+        JButton[] buttons = new JButton[4];
+        String[] operations = {"+", "-", "*", "/"};
+        for (int i = 0; i < 4; i++) {
+            buttons[i] = createButton(operations[i], 80, 80);
+            buttons[i].addActionListener(this);
+        }
+        return buttons;
+    }
+
+    private JButton createButton(String label, int width, int height) {
+        JButton button = new JButton(label);
+        button.setFont(new Font("Arial", Font.PLAIN, 18));
+        button.setPreferredSize(new Dimension(width, height));
+        button.addActionListener(this);
+        return button;
+    }
+
+    private void addButtonsToPanel(JPanel buttonPanel) {
+        for (int i = 1; i < 10; i++) {
+            buttonPanel.add(numberButtons[i]);
+        }
+        buttonPanel.add(numberButtons[0]);
+        buttonPanel.add(clearButton);
+        buttonPanel.add(operationButtons[0]);
+        buttonPanel.add(operationButtons[1]);
+        buttonPanel.add(operationButtons[2]);
+        buttonPanel.add(operationButtons[3]);
+        buttonPanel.add(equalsButton);
+    }
+
     public static void main(String[] args) {
-        new Calculadora();
+        SwingUtilities.invokeLater(() -> new Calculadora());
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         for (int i = 0; i < 10; i++) {
             if (e.getSource() == numberButtons[i]) {
-                textField.setText(textField.getText() + i);
+                handleNumberButtonClick(i);
+                break;
             }
         }
 
-        if (e.getSource() == operationButtons[0]) {
-            performOperation('+');
-        } else if (e.getSource() == operationButtons[1]) {
-            performOperation('-');
-        } else if (e.getSource() == operationButtons[2]) {
-            performOperation('*');
-        } else if (e.getSource() == operationButtons[3]) {
-            performOperation('/');
+        for (int i = 0; i < 4; i++) {
+            if (e.getSource() == operationButtons[i]) {
+                handleOperationButtonClick(i);
+                break;
+            }
         }
 
         if (e.getSource() == equalsButton) {
-            num2 = Double.parseDouble(textField.getText());
-            calculateResult();
+            handleEqualsButtonClick();
+            return;
         }
 
         if (e.getSource() == clearButton) {
-            clearCalculator();
+            handleClearButtonClick();
         }
     }
 
-    private void performOperation(char op) {
+    private void handleNumberButtonClick(int number) {
+    String currentText = textField.getText();
+            textField.setText(String.valueOf(number));
+         
+    }
+
+    private void handleOperationButtonClick(int index) {
+        performOperation(index);
+    }
+
+    private void handleEqualsButtonClick() {
+        num2 = Double.parseDouble(textField.getText());
+        calculateResult();
+    }
+
+    private void handleClearButtonClick() {
+        clearCalculator();
+    }
+
+    private void performOperation(int index) {
         num1 = Double.parseDouble(textField.getText());
-        operator = op;
+        operator = indexToOperator(index);
         textField.setText("");
+    }
+
+    private char indexToOperator(int index) {
+        char[] operators = {'+', '-', '*', '/'};
+        return operators[index];
     }
 
     private void calculateResult() {
@@ -139,5 +195,7 @@ public class Calculadora extends JFrame implements ActionListener {
         textField.setText("");
         num1 = num2 = result = 0;
         operator = '\0';
- }
+    }
 }
+
+
